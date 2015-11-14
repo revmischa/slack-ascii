@@ -10,3 +10,5 @@ This module is designed to be run as an [AWS Lambda](http://docs.aws.amazon.com/
 
 ### Demo
 
+#### Slash command
+[Slash command](!images/slash.png)
