@@ -6,7 +6,6 @@ import random
 import urlparse
 
 def handler(event, context):
-    print(event)
     body = event["postBody"]
     cmd = urlparse.parse_qs(body)
 
@@ -17,27 +16,24 @@ def handler(event, context):
         keyword = cmd["text"][0]
 
     if keyword and len(keyword):
-        ret = search(keyword)
+        ret = search(cmd, keyword)
         if ret:
             post_response(response_url, ret)
         else:
             post_response(response_url, return_error("No fart found"))
     else: # no keyword
-        post_response(response_url, random_fart())
-
-    return {}
+        post_response(response_url, random_fart(cmd))
 
 def post_response(response_url, data):
     requests.post(response_url, data=json.dumps(data), headers={'Content-type': 'application/json'})
 
-def search(keyword):
+def search(cmd, keyword):
     fp = open("farts.xml", "r")
     data = fp.read()
     parser = xml.sax.make_parser()
     Handler = FartHandler()
     parser.setContentHandler( Handler )
     parser.parse("farts.xml")
-    #print "Got %d farts" % len(Handler.allfarts)
     search = keyword
     search = search.upper()
     matches = []
@@ -48,13 +44,13 @@ def search(keyword):
     if not len(matches):
         return None
 
-    return return_fart(*random.choice(matches))
+    return return_fart(cmd, *random.choice(matches))
 
-def random_fart():
+def random_fart(cmd):
     r = requests.get('http://www.asciiartfarts.com/random.cgi')
     soup = BeautifulSoup(r.content, 'html.parser')
     fart = soup.select("td font pre")
-    return return_fart(fart[0].string)
+    return return_fart(cmd, fart[0].string)
 
 def return_error(msg):
     return {
@@ -62,12 +58,15 @@ def return_error(msg):
         "color": "danger"
     }
 
-def return_fart(fart_content, fart_title=None, fart_id=None):
+def return_fart(cmd, fart_content, fart_title=None, fart_id=None):
+    user_name = cmd["user_name"][0]
+    if not fart_title:
+        fart_title = "[RANDOM]"
     fart_content = fart_content.replace('```', "'''")  # work around preformatting escape for slack :/
     return {
         "response_type": "in_channel",
         "attachments": [{
-            'title': fart_title,
+            'title': fart_title + " (from " + user_name + ")",
             # "title_link": "FIXME",
             'fallback': fart_content,
             'text': '```' + fart_content + '```',
@@ -119,4 +118,4 @@ class FartHandler(xml.sax.ContentHandler):
                 self.chars = ""
 
 if __name__ == "__main__":
-    print(search("slashdot"))
+    print(search({}, "slashdot"))
