@@ -1,3 +1,5 @@
+![Slash command](images/doggie_phonograph.png)
+
 Slack slash-command for [ASCII Art Farts ](http://www.asciiartfarts.com/)
 
 ### Usage
@@ -10,5 +12,8 @@ This module is designed to be run as an [AWS Lambda](http://docs.aws.amazon.com/
 
 ### Demo
 
-#### Slash command
-[Slash command](!images/slash.png)
+#### Slash-command
+![Slash command](images/slash.png)
+
+#### Random /ascii
+![/ascii](images/flu.png)
